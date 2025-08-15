@@ -1,0 +1,12 @@
+{
+  "azureDevOps": {
+    "orgUrl": "https://dev.azure.com/yourorgname",
+    "token": "your-personal-access-token-here"
+  },
+  "server": {
+    "name": "az-devops-mcp-server",
+    "version": "1.0.0"
+  }
+}
+
+
