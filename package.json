@@ -9,7 +9,7 @@
     "start": "node dist/start-interactive.js",
     "start:sse": "node dist/index-sse.js",
     "start:interactive": "node dist/start-interactive.js",
-    "dev": "tsx src/index.ts",
+    "dev": "tsx src/index-sse.ts",
     "dev:sse": "tsx src/index-sse.ts",
     "dev:interactive": "tsx src/start-interactive.ts",
     "clean": "rm -rf dist"

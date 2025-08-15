@@ -1,0 +1,5 @@
+# CODEOWNERS file for az-devops-mcp-server
+# This file defines who owns/reviews different parts of the codebase
+
+# Global ownership - all files default to these owners
+* @ameitg

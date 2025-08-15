@@ -4,7 +4,7 @@ import { AzureDevOpsMCPServer } from "./mcp-sse-server.js";
 
 async function main() {
   // Get port from environment variable or use default
-  const port = parseInt(process.env.PORT || '3000', 10);
+  const port = parseInt(process.env.PORT || '9832', 10);
   
   try {
     const server = new AzureDevOpsMCPServer(port);

@@ -1,42 +1,63 @@
 # Azure DevOps MCP Server
 
-A Model Context Protocol (MCP) server that provides integration with Azure DevOps services. This server allows AI assistants to interact with Azure DevOps organizations to manage projects, builds, repositories, and work items.
+A Model Context Protocol (MCP) server that provides integration with Azure DevOps services using **Server-Sent Events (SSE) transport**. This server allows AI assistants to interact with Azure DevOps organizations to manage projects, builds, repositories, and work items.
 
-## Features
+## 🚀 **Features**
 
+- **Azure DevOps Integration**: Full access to Azure DevOps APIs
+- **MCP Protocol**: Implements Model Context Protocol for Cursor integration
+- **SSE Transport**: Server-Sent Events transport for persistent connections
 - **Project Management**: List and explore Azure DevOps projects
 - **Build Management**: View build definitions and build details
 - **Repository Management**: List Git repositories and get repository information
 - **Work Item Management**: Query, view, and create work items using WIQL
 - **Secure Authentication**: Uses Personal Access Tokens for secure API access
+- **Cursor MCP Integration**: Automatic configuration from Cursor MCP settings
 
-## Prerequisites
+## 🌐 **SSE Transport Benefits**
+
+According to the [Cursor MCP documentation](https://docs.cursor.com/en/context/mcp), SSE transport provides:
+
+- **Local/Remote deployment** - Can run on your machine or a remote server
+- **Multiple users** - Multiple Cursor instances can connect to the same server
+- **Persistent connections** - Maintains connection state across requests
+- **Better for production** - More suitable for team environments
+
+## 📋 **Prerequisites**
 
 - Node.js 16 or higher
 - Azure DevOps organization with a Personal Access Token
+- Cursor IDE (for MCP integration)
 - TypeScript (for development)
 
-## Installation
+## 🛠️ **Installation & Setup**
 
-1. Clone the repository:
+1. **Clone the repository:**
 ```bash
 git clone <repository-url>
 cd az-devops-mcp-server
 ```
 
-2. Install dependencies:
+2. **Install dependencies:**
 ```bash
 npm install
 ```
 
-3. Build the project:
+3. **Build the project:**
 ```bash
 npm run build
 ```
 
-## Configuration
+4. **Set Environment Variables (Optional):**
+Create a `.env` file in your project root:
+```bash
+AZURE_DEVOPS_ORG_URL=https://dev.azure.com/yourorgname
+AZURE_DEVOPS_TOKEN=your-personal-access-token
+```
 
-### Azure DevOps Personal Access Token
+## 🔧 **Configuration**
+
+### **Azure DevOps Personal Access Token**
 
 1. Go to your Azure DevOps organization
 2. Click on your profile picture → Personal Access Tokens
@@ -44,31 +65,54 @@ npm run build
 4. Set the appropriate scopes (typically "Full Access" for development)
 5. Copy the generated token
 
-### Environment Variables (Optional)
+### **Cursor MCP Configuration (Recommended)**
 
-You can set environment variables for easier configuration:
+The server can read Azure DevOps configuration directly from Cursor's MCP settings:
+
+#### **Project-specific** (`.cursor/mcp.json`):
+```json
+{
+  "mcpServers": {
+    "azure-devops": {
+      "transport": "sse",
+      "url": "http://localhost:9832/mcp",
+      "orgUrl": "https://dev.azure.com/YOUR_ORG_NAME",
+      "project": "YOUR_PROJECT_NAME",
+      "token": "YOUR_PERSONAL_ACCESS_TOKEN"
+    }
+  }
+}
+```
+
+#### **Quick Setup Script:**
+```bash
+# Generate Cursor MCP install link with your credentials
+./generate-install-link.sh
+```
+This script will prompt you for your Azure DevOps details and automatically create the configuration file and install link.
+
+### **Environment Variables (Alternative)**
+
+You can also set environment variables for easier configuration:
 
 ```bash
 export AZURE_DEVOPS_ORG_URL="https://dev.azure.com/yourorgname"
 export AZURE_DEVOPS_TOKEN="your-personal-access-token"
 ```
 
-## Usage
+## 🚀 **Usage**
 
-### Starting the Server
+### **Starting the Server**
 
 #### **Interactive Mode (Recommended for first-time setup)**
 ```bash
 # Interactive setup with prompts for Azure DevOps credentials
 npm start
-
-# Or use the shell script
-./start-interactive.sh
 ```
 
 #### **Direct Mode (if you have .env file)**
 ```bash
-# Development mode
+# Development mode (SSE)
 npm run dev
 
 # SSE mode
@@ -78,6 +122,16 @@ npm run dev:sse
 npm run build
 npm run start:sse
 ```
+
+### **Server Endpoints**
+
+The SSE server provides several HTTP endpoints on port 9832:
+
+- **MCP SSE**: `http://localhost:9832/mcp` - MCP protocol communication
+- **Health Check**: `http://localhost:9832/health` - Server status
+- **Authentication**: `http://localhost:9832/auth` - Azure DevOps connection
+- **Cursor Settings**: `http://localhost:9832/cursor-settings` - Configuration management
+- **Tools API**: `http://localhost:9832/tools/:toolName` - Direct tool execution
 
 ### Available Tools
 
@@ -143,9 +197,9 @@ Create a new work item.
 - `title`: Work item title
 - `description`: Work item description (optional)
 
-## Example Usage
+## 📚 **Example Usage**
 
-### Basic Workflow
+### **Basic Workflow**
 
 1. **Connect to Azure DevOps:**
    ```
@@ -172,6 +226,37 @@ Create a new work item.
    create_work_item(project: "MyProject", workItemType: "Task", title: "New Task", description: "Task description")
    ```
 
+### **Direct HTTP API Usage**
+
+You can also use the server's HTTP endpoints directly:
+
+#### **Connect to Azure DevOps**
+```bash
+curl -X POST http://localhost:9832/auth \
+  -H "Content-Type: application/json" \
+  -d '{
+    "orgUrl": "https://dev.azure.com/yourorgname",
+    "token": "your-personal-access-token"
+  }'
+```
+
+#### **List Projects**
+```bash
+curl -X POST http://localhost:9832/tools/list_projects \
+  -H "Content-Type: application/json" \
+  -d '{}'
+```
+
+#### **Query Work Items**
+```bash
+curl -X POST http://localhost:9832/tools/list_work_items \
+  -H "Content-Type: application/json" \
+  -d '{
+    "project": "MyProject",
+    "query": "SELECT [System.Id] FROM WorkItems WHERE [System.AssignedTo] = @me"
+  }'
+```
+
 ### WIQL Query Examples
 
 - **All active bugs:**
@@ -189,39 +274,52 @@ Create a new work item.
   SELECT [System.Id] FROM WorkItems WHERE [System.IterationPath] = 'MyProject\Sprint 1'
   ```
 
-## Development
+## 🛠️ **Development**
 
-### Project Structure
+### **Project Structure**
 
 ```
 src/
-├── index.ts          # Main entry point
-├── server.ts         # Azure DevOps MCP server implementation
-└── types/            # Type definitions (if needed)
+├── index-sse.ts          # SSE server entry point
+├── mcp-sse-server.ts     # Main SSE server implementation
+└── start-interactive.ts  # Interactive startup script
 ```
 
-### Building
+### **Building**
 
 ```bash
 npm run build
 ```
 
-### Development Mode
+### **Development Mode**
 
 ```bash
-npm run dev
+npm run dev          # Start SSE server in development mode
+npm run dev:sse      # Alternative SSE development command
 ```
 
-### Clean Build
+### **Clean Build**
 
 ```bash
 npm run clean
 npm run build
 ```
 
-## Troubleshooting
+### **Available Scripts**
 
-### Common Issues
+```bash
+npm start               # Interactive startup (recommended)
+npm run start:sse       # Start SSE server directly
+npm run start:interactive # Interactive startup
+npm run dev             # Development mode (SSE)
+npm run dev:sse         # Development mode (SSE)
+npm run build           # Build the project
+npm run clean           # Clean build artifacts
+```
+
+## 🐛 **Troubleshooting**
+
+### **Common Issues**
 
 1. **Authentication Failed:**
    - Verify your Personal Access Token is valid
@@ -236,7 +334,17 @@ npm run build
    - Check that the project has build definitions
    - Verify build permissions
 
-### Debug Mode
+4. **Server Won't Start:**
+   - Check if port 9832 is available
+   - Verify all dependencies are installed
+   - Check Node.js version (16+ required)
+
+5. **Cursor Can't Connect:**
+   - Verify server is running on correct port (9832)
+   - Check MCP configuration syntax
+   - Ensure Cursor is restarted after configuration
+
+### **Debug Mode**
 
 For debugging, you can run the server with additional logging:
 
@@ -244,12 +352,14 @@ For debugging, you can run the server with additional logging:
 DEBUG=* npm run dev
 ```
 
-## Security Considerations
+## 🔒 **Security Considerations**
 
 - **Never commit Personal Access Tokens** to version control
-- Use environment variables for sensitive configuration
+- Use environment variables or Cursor MCP settings for sensitive configuration
 - Regularly rotate your Personal Access Tokens
 - Grant minimal necessary permissions to tokens
+- **CORS**: Configured to allow all origins in development
+- **Network Access**: Server binds to localhost by default
 
 ## Contributing
 
@@ -270,9 +380,10 @@ For issues and questions:
 - Review Azure DevOps API documentation
 - Open an issue in the repository
 
-## References
+## 📚 **References**
 
 - [Model Context Protocol](https://modelcontextprotocol.io/)
+- [Cursor MCP Documentation](https://docs.cursor.com/en/context/mcp)
 - [Azure DevOps REST API](https://docs.microsoft.com/en-us/rest/api/azure/devops/)
 - [Azure DevOps Node API](https://www.npmjs.com/package/azure-devops-node-api)
 - [MCP SDK](https://www.npmjs.com/package/@modelcontextprotocol/sdk)
