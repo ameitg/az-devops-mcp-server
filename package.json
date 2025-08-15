@@ -1,17 +1,19 @@
 {
   "name": "az-devops-mcp-server",
   "version": "1.0.0",
-  "description": "MCP Server for Azure DevOps integration",
+  "description": "MCP Server for Azure DevOps integration using stdio transport",
   "main": "dist/index.js",
   "type": "module",
   "scripts": {
     "build": "tsc",
-    "start": "npm install && npm run build && node dist/index-sse.js",
+    "start": "npm install && npm run build && node dist/index.js",
+    "dev": "tsx src/index.ts",
     "clean": "rm -rf dist"
   },
   "keywords": [
     "mcp",
     "azure-devops",
+    "stdio",
     "model-context-protocol"
   ],
   "author": "",
@@ -19,13 +21,9 @@
   "dependencies": {
     "@modelcontextprotocol/sdk": "1.17.3",
     "azure-devops-node-api": "15.1.1",
-    "cors": "^2.8.5",
-    "dotenv": "^16.3.1",
-    "express": "^4.18.2"
+    "dotenv": "^16.3.1"
   },
   "devDependencies": {
-    "@types/cors": "^2.8.19",
-    "@types/express": "^5.0.3",
     "@types/node": "^20.0.0",
     "tsx": "^4.0.0",
     "typescript": "^5.0.0"
